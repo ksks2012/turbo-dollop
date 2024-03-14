@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"turbo-dollop/drivers/common"
+	"turbo-dollop/drivers/storage/common"
 
 	turbodollop "turbo-dollop"
 
@@ -26,7 +26,7 @@ type Client interface {
 	// Incr(ctx context.Context, key string) *libredis.IntCmd
 }
 
-func NewStore(client Client) (turbodollop.Storage, error) {
+func NewStorage(client Client) (turbodollop.Storage, error) {
 	return NewStorageWithOptions(client, turbodollop.StorageOptions{
 		Prefix:   turbodollop.DefaultPrefix,
 		CleanUp:  turbodollop.DefaultCleanUpInterval,

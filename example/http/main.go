@@ -11,7 +11,7 @@ import (
 
 	mhttp "turbo-dollop/drivers/middleware/stdlib"
 
-	sredis "turbo-dollop/drivers/store/redis"
+	sredis "turbo-dollop/drivers/storage/redis"
 )
 
 func main() {
@@ -31,8 +31,8 @@ func main() {
 	}
 	client := libredis.NewClient(option)
 
-	// Create a store with the redis client.
-	store, err := sredis.NewStorageWithOptions(client, limiter.StorageOptions{
+	// Create a storage with the redis client.
+	storage, err := sredis.NewStorageWithOptions(client, limiter.StorageOptions{
 		Prefix:   "limiter_http_example",
 		MaxRetry: 3,
 	})
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	// Create a new middleware with the limiter instance.
-	middleware := mhttp.NewMiddleware(limiter.New(store, rate, limiter.WithTrustForwardHeader(true)))
+	middleware := mhttp.NewMiddleware(limiter.New(storage, rate, limiter.WithTrustForwardHeader(true)))
 
 	// Launch a simple server.
 	http.Handle("/", middleware.Handler(http.HandlerFunc(index)))
