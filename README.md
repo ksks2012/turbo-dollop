@@ -11,6 +11,13 @@
 go run ./example/http/main.go
 ```
 
+## Test
+
+- memory
+```
+go test ./drivers/storage/memory/
+```
+
 # TODO
 
 ## Storage
