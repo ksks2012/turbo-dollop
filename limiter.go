@@ -52,6 +52,10 @@ func (limiter *Limiter) Get(ctx context.Context, key string) (Context, error) {
 	return limiter.Storage.Get(ctx, key, limiter.Rate)
 }
 
+func (limiter *Limiter) Peek(ctx context.Context, key string) (Context, error) {
+	return limiter.Storage.Peek(ctx, key, limiter.Rate)
+}
+
 func (limiter *Limiter) Reset(ctx context.Context, key string) (Context, error) {
 	return limiter.Storage.Reset(ctx, key, limiter.Rate)
 }

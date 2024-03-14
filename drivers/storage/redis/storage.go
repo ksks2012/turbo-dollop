@@ -72,6 +72,11 @@ func (storage *Storage) Get(ctx context.Context, key string, rate turbodollop.Ra
 	return currentContext(int64(numVal), rate)
 }
 
+// TODO:
+func (storage *Storage) Peek(ctx context.Context, key string, rate turbodollop.Rate) (turbodollop.Context, error) {
+	return turbodollop.Context{}, nil
+}
+
 func (storage *Storage) Increment(ctx context.Context, key string, count int64, rate turbodollop.Rate) (turbodollop.Context, error) {
 	storage.rwMutex.RLock()
 	defer storage.rwMutex.RUnlock()
