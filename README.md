@@ -15,7 +15,7 @@ go run ./example/http/main.go
 
 ## Storage
 
-- [ ] Memeory
+- [x] Memeory: with go-cache
 - [ ] Redis
 
 ## Middleware
