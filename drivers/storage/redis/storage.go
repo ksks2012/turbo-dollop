@@ -23,7 +23,8 @@ type Client interface {
 	SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) *libredis.BoolCmd
 	EvalSha(ctx context.Context, sha string, keys []string, args ...interface{}) *libredis.Cmd
 	ScriptLoad(ctx context.Context, script string) *libredis.StringCmd
-	// Incr(ctx context.Context, key string) *libredis.IntCmd
+	Incr(ctx context.Context, key string) *libredis.IntCmd
+	IncrBy(ctx context.Context, key string, value int64) *libredis.IntCmd
 }
 
 func NewStorage(client Client) (turbodollop.Storage, error) {
@@ -54,6 +55,16 @@ func NewStorageWithOptions(client Client, options turbodollop.StorageOptions) (t
 func (storage *Storage) Get(ctx context.Context, key string, rate turbodollop.Rate) (turbodollop.Context, error) {
 	storage.rwMutex.RLock()
 	defer storage.rwMutex.RUnlock()
+	val, err := storage.client.Incr(ctx, storage.getCacheKey(key)).Result()
+	if err != nil {
+		return currentContext(0, rate)
+	}
+	return currentContext(int64(val), rate)
+}
+
+func (storage *Storage) Peek(ctx context.Context, key string, rate turbodollop.Rate) (turbodollop.Context, error) {
+	storage.rwMutex.RLock()
+	defer storage.rwMutex.RUnlock()
 	val, err := storage.client.Get(ctx, storage.getCacheKey(key)).Result()
 	if err == libredis.Nil {
 		// Create the key if it does not exist
@@ -72,18 +83,11 @@ func (storage *Storage) Get(ctx context.Context, key string, rate turbodollop.Ra
 	return currentContext(int64(numVal), rate)
 }
 
-// TODO:
-func (storage *Storage) Peek(ctx context.Context, key string, rate turbodollop.Rate) (turbodollop.Context, error) {
-	return turbodollop.Context{}, nil
-}
-
 func (storage *Storage) Increment(ctx context.Context, key string, count int64, rate turbodollop.Rate) (turbodollop.Context, error) {
 	storage.rwMutex.RLock()
 	defer storage.rwMutex.RUnlock()
 	// TODO:
-	// val, err := storage.client.Incr(ctx, storage.getCacheKey(key)).Result()
-	var val int64 = 0
-	var err error
+	val, err := storage.client.IncrBy(ctx, storage.getCacheKey(key), count).Result()
 	if err != nil {
 		return turbodollop.Context{}, err
 	}
