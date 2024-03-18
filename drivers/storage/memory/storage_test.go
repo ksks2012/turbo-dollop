@@ -15,3 +15,10 @@ func TestMemoryStorageSequentialAccess(t *testing.T) {
 		CleanUp: 30 * time.Second,
 	}))
 }
+
+func TestMemoryStorageConcurrentAccess(t *testing.T) {
+	tests.TestStorageConcurrentAccess(t, memory.NewStorageWithOptions(limiter.StorageOptions{
+		Prefix:  "limiter:memory:concurrent-test",
+		CleanUp: 1 * time.Nanosecond,
+	}))
+}

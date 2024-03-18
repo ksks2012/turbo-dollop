@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -112,4 +113,32 @@ func TestStorageSequentialAccess(t *testing.T, store limiter.Storage) {
 		is.True((lctx.Reset - time.Now().Unix()) <= 60)
 		is.False(lctx.Reached)
 	}
+}
+
+// TestStorageConcurrentAccess verify that store works as expected with a concurrent access.
+func TestStorageConcurrentAccess(t *testing.T, store limiter.Storage) {
+	is := require.New(t)
+	ctx := context.Background()
+
+	limiter := limiter.New(store, limiter.Rate{
+		Limit: 100000,
+		Unit:  10 * time.Second,
+	})
+
+	goroutines := 500
+	ops := 500
+
+	wg := &sync.WaitGroup{}
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func(i int) {
+			for j := 0; j < ops; j++ {
+				lctx, err := limiter.Get(ctx, "foo")
+				is.NoError(err)
+				is.NotZero(lctx)
+			}
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
 }
