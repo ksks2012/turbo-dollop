@@ -46,6 +46,38 @@ func TestRedisStoreConcurrentAccess(t *testing.T) {
 	tests.TestStorageConcurrentAccess(t, store)
 }
 
+func BenchmarkRedisStoreSequentialAccess(b *testing.B) {
+	is := require.New(b)
+
+	client, err := newRedisClient()
+	is.NoError(err)
+	is.NotNil(client)
+
+	store, err := redis.NewStorageWithOptions(client, limiter.StorageOptions{
+		Prefix: "limiter:redis:sequential-benchmark",
+	})
+	is.NoError(err)
+	is.NotNil(store)
+
+	tests.BenchmarkStorageSequentialAccess(b, store)
+}
+
+func BenchmarkRedisStoreConcurrentAccess(b *testing.B) {
+	is := require.New(b)
+
+	client, err := newRedisClient()
+	is.NoError(err)
+	is.NotNil(client)
+
+	store, err := redis.NewStorageWithOptions(client, limiter.StorageOptions{
+		Prefix: "limiter:redis:concurrent-benchmark",
+	})
+	is.NoError(err)
+	is.NotNil(store)
+
+	tests.BenchmarkStorageConcurrentAccess(b, store)
+}
+
 func newRedisClient() (*libredis.Client, error) {
 	uri := "redis://localhost:6379/0"
 	if os.Getenv("REDIS_URI") != "" {

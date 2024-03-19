@@ -22,3 +22,17 @@ func TestMemoryStorageConcurrentAccess(t *testing.T) {
 		CleanUp: 1 * time.Nanosecond,
 	}))
 }
+
+func BenchmarkMemoryStorageSequentialAccess(b *testing.B) {
+	tests.BenchmarkStorageSequentialAccess(b, memory.NewStorageWithOptions(limiter.StorageOptions{
+		Prefix:  "limiter:memory:sequential-benchmark",
+		CleanUp: 1 * time.Hour,
+	}))
+}
+
+func BenchmarkMemoryStorageConcurrentAccess(b *testing.B) {
+	tests.BenchmarkStorageConcurrentAccess(b, memory.NewStorageWithOptions(limiter.StorageOptions{
+		Prefix:  "limiter:memory:concurrent-benchmark",
+		CleanUp: 1 * time.Hour,
+	}))
+}
