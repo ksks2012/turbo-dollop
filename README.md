@@ -14,9 +14,24 @@ go run ./example/http/main.go
 ## Test
 
 - memory
-```
-go test ./drivers/storage/memory/
-```
+    - test
+        ```
+        go test ./drivers/storage/memory/
+        ```
+    - benchmark
+        ```
+        go test -bench -v ./drivers/storage/memory/
+        ```
+
+- redis
+    - test
+        ```
+        go test ./drivers/storage/redis/
+        ```
+    - benchmark
+        ```
+        go test -bench -v ./drivers/storage/redis/
+        ```
 
 # TODO
 
