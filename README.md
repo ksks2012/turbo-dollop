@@ -8,7 +8,12 @@
 ## HTTP with Redis
 
 ```
-go run ./example/http/main.go
+go run ./example/redis_http/main.go
+```
+
+## HTTP with memory
+```
+go run ./example/memory_http/main.go
 ```
 
 ## Test
