@@ -63,3 +63,7 @@ func (limiter *Limiter) Reset(ctx context.Context, key string) (Context, error) 
 func (limiter *Limiter) Increment(ctx context.Context, key string, count int64) (Context, error) {
 	return limiter.Storage.Increment(ctx, key, count, limiter.Rate)
 }
+
+func (limiter *Limiter) Close(ctx context.Context) (Context, error) {
+	return limiter.Storage.Close(ctx)
+}

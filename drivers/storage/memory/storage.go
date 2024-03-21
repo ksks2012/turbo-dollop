@@ -66,6 +66,11 @@ func (store *Storage) Reset(ctx context.Context, key string, rate limiter.Rate) 
 	return lctx, nil
 }
 
+// Reset returns the limit for given identifier.
+func (store *Storage) Close(ctx context.Context) (limiter.Context, error) {
+	return limiter.Context{}, nil
+}
+
 // getCacheKey returns the full path for an identifier.
 func (store *Storage) getCacheKey(key string) string {
 	buffer := strings.Builder{}

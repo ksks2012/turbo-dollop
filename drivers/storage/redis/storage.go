@@ -25,6 +25,7 @@ type Client interface {
 	ScriptLoad(ctx context.Context, script string) *libredis.StringCmd
 	Incr(ctx context.Context, key string) *libredis.IntCmd
 	IncrBy(ctx context.Context, key string, value int64) *libredis.IntCmd
+	Scan(ctx context.Context, cursor uint64, match string, count int64) *libredis.ScanCmd
 }
 
 func NewStorage(client Client) (turbodollop.Storage, error) {
@@ -103,6 +104,26 @@ func (storage *Storage) Reset(ctx context.Context, key string, rate turbodollop.
 		return turbodollop.Context{}, err
 	}
 	return currentContext(0, rate)
+}
+
+// Clear keys in redis
+func (storage *Storage) Close(ctx context.Context) (turbodollop.Context, error) {
+	storage.rwMutex.RLock()
+	defer storage.rwMutex.RUnlock()
+
+	// TODO: Performance improvement
+	iter := storage.client.Scan(ctx, 0, storage.Prefix+"*", 10).Iterator()
+	var err error
+	for iter.Next(ctx) {
+		err = storage.client.Del(ctx, iter.Val()).Err()
+		if err != nil {
+			panic(err)
+		}
+	}
+	if err = iter.Err(); err != nil {
+		panic(err)
+	}
+	return turbodollop.Context{}, err
 }
 
 // getCacheKey returns the full path for an identifier.

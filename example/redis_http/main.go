@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	libredis "github.com/redis/go-redis/v9"
 
@@ -40,14 +45,42 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+	defer storage.Close(context.Background())
 
 	// Create a new middleware with the limiter instance.
 	middleware := mhttp.NewMiddleware(limiter.New(storage, rate, limiter.WithTrustForwardHeader(true)))
 
-	// Launch a simple server.
 	http.Handle("/", middleware.Handler(http.HandlerFunc(index)))
-	fmt.Println("Server is running on port 7777...")
-	log.Fatal(http.ListenAndServe(":7777", nil))
+	httpServer := http.Server{
+		Addr: ":7777",
+	}
+
+	// Launch a simple server.
+	go func() {
+		// service connections
+		fmt.Println("Server is running on port 7777...")
+		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("HTTP server ListenAndServe Error: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := httpServer.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown: ", err)
+	}
+
+	log.Println("Server exiting")
 
 }
 

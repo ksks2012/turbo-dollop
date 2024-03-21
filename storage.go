@@ -10,6 +10,7 @@ type Storage interface {
 	Peek(ctx context.Context, key string, rate Rate) (Context, error)
 	Reset(ctx context.Context, key string, rate Rate) (Context, error)
 	Increment(ctx context.Context, key string, count int64, rate Rate) (Context, error)
+	Close(ctx context.Context) (Context, error)
 }
 
 type StorageOptions struct {
